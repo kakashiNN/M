@@ -17,7 +17,7 @@
     "ignoreCommand": []
   },
   "adminBot": [
-    "",
+    "61572240295227",
     ""
   ],
   "whiteListMode": {
@@ -38,11 +38,11 @@
   "dashBoard": {
     "enable": true,
     "expireVerifyCode": 300000,
-    "port": 3001
+    "port": 77890
   },
   "serverUptime": {
     "enable": false,
-    "port": 3001,
+    "port": 77890,
     "socket": {
       "enable": true,
       "channelName": "uptime",
