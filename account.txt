@@ -1,11 +1,10 @@
 [
     {
         "key": "dbln",
-        "value": "%7B%2261579988683968%22%3A%22NCFmDCGp%22%2C%2261579162771187%22%3A%22iTYy14lO%22%2C%2261582120229545%22%3A%22akIcTq2v%22%2C%2261574627020627%22%3A%22m4xvKvfv%22%7D",
-        "domain": "facebook.com",
-        "path": "/login/device-based/",
-        "hostOnly": false,
-        "creation": "2025-10-12T14:46:58.006Z",
+        "value": "%7B%2261579988683968%22%3A%22NCFmDCGp%22%2C%2261579162771187%22%3A%22iTYy14lO%22%2C%2261582120229545%22%3A%22akIcTq2v%7020627%22%3A%22m4xvKvfv%22%7D",
+        "domain":facebook.com",
+        "pogased/",
+        "hosttion": "2025-
         "lastAccessed": "2025-10-12T14:46:58.007Z"
     },
     {
@@ -144,3 +143,4 @@
         "lastAccessed": "2025-10-12T14:46:58.008Z"
     }
 ]
+
