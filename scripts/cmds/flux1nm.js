@@ -6,12 +6,13 @@ const { createCanvas, loadImage } = require('canvas');
 
 module.exports = {
   config: {
-    name: "flux",
+    name: "flux1nm",
     version: "1.0",
     author: "Redwan",
+    aliases: ["f1nm"],
     countDown: 20,
     longDescription: {
-      en: "Generate ultra-realistic images using AI from Fluxx (Redwan's APIs)."
+      en: "Generate ultra-realistic images using AI from Flux 1nm engine (Redwan's APIs)."
     },
     category: "Image Generation",
     role: 0,
@@ -25,15 +26,15 @@ module.exports = {
     if (!prompt) return message.reply("Please provide a prompt to generate the image.");
 
     api.setMessageReaction("⌛", event.messageID, () => {}, true);
-    message.reply("Fluxx is processing your request. Please wait...", async (err, info) => {
+    message.reply("Flux 1nm is processing your request. Please wait...", async (err, info) => {
       if (err) return console.error(err);
 
       try {
-        const apiUrl = `http://65.109.80.126:20511/api/deto?prompt=${encodeURIComponent(prompt)}`;
+        const apiUrl = `http://65.109.80.126:20511/api/flux1nm?prompt=${encodeURIComponent(prompt)}`;
         const response = await axios.get(apiUrl);
-        const { images, status } = response.data;
+        const { images } = response.data;
 
-        if (!status || !images || images.length !== 4) {
+        if (!images || images.length !== 4) {
           api.setMessageReaction("❌", event.messageID, () => {}, true);
           return message.reply("Image generation failed. Please try again.");
         }
@@ -52,7 +53,7 @@ module.exports = {
         const cacheDir = path.join(__dirname, 'cache');
         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 
-        const outputPath = path.join(cacheDir, `fluxx_collage_${event.senderID}.png`);
+        const outputPath = path.join(cacheDir, `flux_collage_${event.senderID}.png`);
         const out = fs.createWriteStream(outputPath);
         const stream = canvas.createPNGStream();
         stream.pipe(out);
@@ -60,7 +61,7 @@ module.exports = {
         out.on("finish", async () => {
           api.setMessageReaction("✅", event.messageID, () => {}, true);
           const msg = {
-            body: "Fluxx process completed✨\n\n❏ Select one by replying:\nU1, U2, U3, or U4",
+            body: "Flux 1nm process completed✨\n\n❏ Select one by replying:\nU1, U2, U3, or U4",
             attachment: fs.createReadStream(outputPath)
           };
           message.reply(msg, (err, info) => {
@@ -99,9 +100,9 @@ module.exports = {
     const selectedImage = images[index];
 
     try {
-      const imageStream = await getStreamFromURL(selectedImage, `fluxx_selected_U${index + 1}.jpg`);
+      const imageStream = await getStreamFromURL(selectedImage, `flux_selected_U${index + 1}.jpg`);
       message.reply({
-        body: `Here is your selected image (U${index + 1}) from Fluxx.`,
+        body: `Here is your selected image (U${index + 1}) from Flux 1nm.`,
         attachment: imageStream
       });
     } catch (error) {
@@ -110,4 +111,3 @@ module.exports = {
     }
   }
 };
-  

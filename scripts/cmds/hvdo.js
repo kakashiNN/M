@@ -5,10 +5,10 @@ module.exports = {
 		version: "1.0",
 		author: "kshitiz",
 		countDown: 60,
-		role: 0,
+		role: 2,
 		shortDescription: "get hentai video",
 		longDescription: "it will send hentai  video",
-		category: "𝟭𝟴+",
+		category: "18+",
 		guide: "{p}{n}hvdo",
 	},
 
@@ -18,7 +18,7 @@ module.exports = {
 		const senderID = event.senderID;
 
 		const loadingMessage = await message.reply({
-			body: "Loading random fuÇk v1d30... ২মিনিট দারা vidio দিতাছি 🙂🔪",
+			body: "Loading random hentai... Please wait! upto 5min 🤡",
 		});
 
 		const link = [

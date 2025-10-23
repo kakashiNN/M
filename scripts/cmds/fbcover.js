@@ -1,80 +1,48 @@
-const axios = require("axios");
+const axios = require('axios');
+const { createReadStream, writeFileSync, unlinkSync } = require('fs');
 
-const baseApiUrl = async () => {
-  const base = await axios.get(
-    "https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json",
-  );
-  return base.data.api;
-};
+module.exports = {
+	config: {
+		name: 'fbcover',
+		version: '1.1',
+		author: 'Redwan',
+		countDown: 5,
+		role: 0,
+		shortDescription: 'Create a Facebook banner',
+		longDescription: 'Generates a Facebook cover using custom input.',
+		category: 'Image Generation',
+		guide: {
+			en: '{p}{n} <name> | <subname> | <address> | <phone> | <email> | <color>',
+		}
+	},
 
-module.exports.config = {
-  name: "fbcover",
-  version: "6.9",
-  role: 0,
-  author: "Dipto",
-  description: "Facebook cover",
-  category: "Cover",
-  guide: {
-    en: "name - title - address - email - phone - color (default = white)",
-  },
-  coolDowns: 5,
-};
+	onStart: async function ({ message, args, event }) {
+		const info = args.join(' ').split('|').map(i => i.trim());
+		if (info.length < 6) {
+			return message.reply(`Please enter all 6 details:\n/fbcover name | subname | address | phone | email | color`);
+		}
 
-module.exports.onStart = async function ({ api, event, args, usersData }) {
-  const dipto = args.join(" ");
-  let id;
-  if (event.type === "message_reply") {
-    id = event.messageReply.senderID;
-  } else {
-    id = Object.keys(event.mentions)[0] || event.senderID;
-  }
+		const [name, subname, address, phoneNumber, email, color] = info;
 
-  const nam = await usersData.get(id);
+		await message.reply('Processing your cover, senpai...❤️');
 
-  if (!dipto) {
-    return api.sendMessage(
-      `❌| wrong \ntry ${global.GoatBot.config.prefix}fbcover v1/v2/v3 - name - title - address - email - phone - color (default = white)`,
-      event.threadID,
-      event.messageID,
-    );
-  } else {
-    const msg = dipto.split("-");
-    const v = msg[0]?.trim() || "v1";
-    const name = msg[1]?.trim() || " ";
-    const subname = msg[2]?.trim() || " ";
-    const address = msg[3]?.trim() || " ";
-    const email = msg[4]?.trim() || " ";
-    const phone = msg[5]?.trim() || " ";
-    const color = msg[6]?.trim() || "white";
+		try {
+			const url = `65.109.80.126:20511/api/fbcoverv1?name=${encodeURIComponent(name)}&uid=${event.senderID}&address=${encodeURIComponent(address)}&email=${encodeURIComponent(email)}&subname=${encodeURIComponent(subname)}&phoneNumber=${encodeURIComponent(phoneNumber)}&color=${encodeURIComponent(color)}`;
 
-    api.sendMessage(
-      `Processing your cover, Wait koro baby < 😘`,
-      event.threadID,
-      (err, info) =>
-        setTimeout(() => {
-          api.unsendMessage(info.messageID);
-        }, 4000),
-    );
+			const res = await axios.get(url, { responseType: 'arraybuffer' });
 
-    const img = `${await baseApiUrl()}/cover/${v}?name=${encodeURIComponent(name)}&subname=${encodeURIComponent(subname)}&number=${encodeURIComponent(phone)}&address=${encodeURIComponent(address)}&email=${encodeURIComponent(email)}&colour=${encodeURIComponent(color)}&uid=${id}`;
+			const path = __dirname + `/fbcover_${event.senderID}.png`;
+			writeFileSync(path, Buffer.from(res.data, 'binary'));
 
-    try {
-      const response = await axios.get(img, { responseType: "stream" });
-      const attachment = response.data;
-      api.sendMessage(
-        {
-          body: `✿━━━━━━━━━━━━━━━━━━━━━━━━━━━✿\n🔵𝗙𝗜𝗥𝗦𝗧 𝗡𝗔𝗠𝗘: ${name}\n⚫𝗦𝗘𝗖𝗢𝗡𝗗 𝗡𝗔𝗠𝗘:${subname}\n⚪𝗔𝗗𝗗𝗥𝗘𝗦𝗦: ${address}\n📫𝗠𝗔𝗜𝗟: ${email}\n☎️𝗣𝗛𝗢𝗡𝗘 𝗡𝗢.: ${phone}\n☢️𝗖𝗢𝗟𝗢𝗥: ${color}\n💁𝗨𝗦𝗘𝗥 𝗡𝗔𝗠𝗘: ${nam.name}\n✅𝗩𝗲𝗿𝘀𝗶𝗼𝗻 : ${v}\n✿━━━━━━━━━━━━━━━━━━━━━━━━━━━✿`,
-          attachment,
-        },
-        event.threadID,
-        event.messageID,
-      );
-    } catch (error) {
-      console.error(error);
-      api.sendMessage(
-        "An error occurred while generating the FB cover.",
-        event.threadID,
-      );
-    }
-  }
+			await message.reply({
+				body: '「 Your cover is ready, senpai! ❤️‍🔥 」',
+				attachment: createReadStream(path)
+			});
+
+			unlinkSync(path);
+		} catch (err) {
+			console.error(err);
+			message.reply('Something went wrong while generating your cover. Please try again later.');
+		}
+	}
 };

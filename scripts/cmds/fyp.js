@@ -1,70 +1,88 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const { shortenURL } = global.utils;
+
+async function getStreamFromURL(url) {
+  const response = await axios.get(url, { responseType: 'stream' });
+  return response.data;
+}
+
+async function fetchTikTokVideos(query) {
+  try {
+    const response = await axios.get(`https://lyric-search-neon.vercel.app/kshitiz?keyword=${query}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function checkAuthor(authorName) {
+  try {
+    const response = await axios.get('https://author-check.vercel.app/name');
+    const apiAuthor = response.data.name;
+    return apiAuthor === authorName;
+  } catch (error) {
+    console.error("Error checking author:", error);
+    return false;
+  }
+}
 
 module.exports = {
-	config: {
-		name: "fyp",
-		version: "1.0",
-		author: "kshitiz",
-		countDown: 15,
-		role: 1,
-		shortDescription: "random videos",
-		longDescription: {
-			en: "random videos from tiktok"
-		},
-		category: "𝗠𝗘𝗗𝗜𝗔",
-		guide: {
-			en: "{p}{n}"
-		}
-	},
+  config: {
+    name: "fyp",
+    aliases: [],
+    author: "Vex_Kshitiz",
+    version: "1.0",
+    shortDescription: {
+      en: "",
+    },
+    longDescription: {
+      en: "tiktok alternative",
+    },
+    category: "fun",
+    guide: {
+      en: "{p}{n} [keyword]",
+    },
+  },
+  onStart: async function ({ api, event, args }) {
+    const isAuthorValid = await checkAuthor(module.exports.config.author);
+    if (!isAuthorValid) {
+      await api.sendMessage("Author changer alert! this cmd belongs to Vex_Kshitiz.", event.threadID, event.messageID);
+      return;
+    }
 
-	async onStart({ api, event }) {
-		const getRandomQuery = () => {
-			const queries = ["#neymaredits", "#badgirls", "animeedit", "rodeodancegirls", "#kinktok", "lyricseditvibe3", "messiedits", "ronaldoedits", "#memenepal", "deepthoughtss44", "mr.bishal_editz", "ruth_prashant", "ichijou_7", "peace_quote1"];
-			const randomIndex = Math.floor(Math.random() * queries.length);
-			return queries[randomIndex];
-		};
+    api.setMessageReaction("✨", event.messageID, (err) => {}, true);
+    const query = args.join(' ');
 
-		const searchAndSendVideo = async (threadID) => {
-			const searchQuery = getRandomQuery();
+    const videos = await fetchTikTokVideos(query);
 
-			try {
-				const apiUrl = `https://hiroshi.hiroshiapi.repl.co/tiktok/searchvideo?keywords=${encodeURIComponent(searchQuery)}`;
-				const response = await axios.get(apiUrl);
-				const videos = response.data.data.videos;
+    if (!videos || videos.length === 0) {
+      api.sendMessage({ body: `${query} not found.` }, event.threadID, event.messageID);
+      return;
+    }
 
-				if (!videos || videos.length === 0) {
-					api.sendMessage(`No TikTok videos found for the query: ${searchQuery}`, threadID);
-				} else {
-					const videoData = videos[0];
-					const videoUrl = videoData.play;
-					const message = `Random Tiktok video🥱`;
-					const filePath = path.join(__dirname, `/cache/tiktok_video_${threadID}.mp4`);
-					const writer = fs.createWriteStream(filePath);
+    const selectedVideo = videos[Math.floor(Math.random() * videos.length)];
+    const videoUrl = selectedVideo.videoUrl;
 
-					const videoResponse = await axios({ method: 'get', url: videoUrl, responseType: 'stream' });
-					videoResponse.data.pipe(writer);
+    if (!videoUrl) {
+      api.sendMessage({ body: 'Error: Video not found.' }, event.threadID, event.messageID);
+      return;
+    }
 
-					writer.on('finish', async () => {
-						await api.sendMessage({
-							body: message,
-							attachment: fs.createReadStream(filePath)
-						}, threadID);
-						fs.unlinkSync(filePath);
-					});
-				}
-			} catch (error) {
-				console.error('Error:', error);
-				api.sendMessage("An error occurred while processing the request.", threadID);
-			}
-		};
-
-		try {
-			const threadID = event.threadID;
-			await searchAndSendVideo(threadID);
-		} catch (error) {
-			console.error('Error:', error);
-		}
-	}
+    try {
+      const shortUrl = await shortenURL(videoUrl);
+      const videoStream = await getStreamFromURL(videoUrl);
+      await api.sendMessage({
+        body: ``,
+        attachment: videoStream,
+      }, event.threadID, event.messageID);
+    } catch (error) {
+      console.error(error);
+      api.sendMessage({ body: 'An error occurred while processing the video.\nPlease try again later.' }, event.threadID, event.messageID);
+    }
+  },
 };

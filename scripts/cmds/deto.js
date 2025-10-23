@@ -6,12 +6,13 @@ const { createCanvas, loadImage } = require('canvas');
 
 module.exports = {
   config: {
-    name: "flux",
+    name: "deto",
     version: "1.0",
     author: "Redwan",
+    aliases: ["dt"],
     countDown: 20,
     longDescription: {
-      en: "Generate ultra-realistic images using AI from Fluxx (Redwan's APIs)."
+      en: "Generate AI-powered images using the Deto engine (Redwan's APIs)."
     },
     category: "Image Generation",
     role: 0,
@@ -25,7 +26,7 @@ module.exports = {
     if (!prompt) return message.reply("Please provide a prompt to generate the image.");
 
     api.setMessageReaction("⌛", event.messageID, () => {}, true);
-    message.reply("Fluxx is processing your request. Please wait...", async (err, info) => {
+    message.reply("Deto is generating your images. Please wait...", async (err, info) => {
       if (err) return console.error(err);
 
       try {
@@ -52,7 +53,7 @@ module.exports = {
         const cacheDir = path.join(__dirname, 'cache');
         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 
-        const outputPath = path.join(cacheDir, `fluxx_collage_${event.senderID}.png`);
+        const outputPath = path.join(cacheDir, `deto_collage_${event.senderID}.png`);
         const out = fs.createWriteStream(outputPath);
         const stream = canvas.createPNGStream();
         stream.pipe(out);
@@ -60,7 +61,7 @@ module.exports = {
         out.on("finish", async () => {
           api.setMessageReaction("✅", event.messageID, () => {}, true);
           const msg = {
-            body: "Fluxx process completed✨\n\n❏ Select one by replying:\nU1, U2, U3, or U4",
+            body: "Deto completed your images ✨\n\n❏ Select one by replying:\nU1, U2, U3, or U4",
             attachment: fs.createReadStream(outputPath)
           };
           message.reply(msg, (err, info) => {
@@ -99,9 +100,9 @@ module.exports = {
     const selectedImage = images[index];
 
     try {
-      const imageStream = await getStreamFromURL(selectedImage, `fluxx_selected_U${index + 1}.jpg`);
+      const imageStream = await getStreamFromURL(selectedImage, `deto_selected_U${index + 1}.jpg`);
       message.reply({
-        body: `Here is your selected image (U${index + 1}) from Fluxx.`,
+        body: `Here is your selected image (U${index + 1}) from Deto.`,
         attachment: imageStream
       });
     } catch (error) {
@@ -110,4 +111,4 @@ module.exports = {
     }
   }
 };
-  
+            

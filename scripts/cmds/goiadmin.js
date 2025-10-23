@@ -6,7 +6,7 @@ modifier:"ＮＩＲＯＢ ᶻ 𝗓 𐰁",
 role: 0,
 shortDescription: " ",
 longDescription: "",
-category: "𝗕𝗢𝗧",
+category: "𝗔𝗗𝗠𝗜𝗡",
 guide: "{pn}"
 },
 
@@ -34,4 +34,3 @@ event.messageID
 
 onStart: async function({}) {}
 };
-
