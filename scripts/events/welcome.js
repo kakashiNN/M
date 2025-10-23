@@ -1,5 +1,6 @@
-const moment = require("moment-timezone");
-const { drive } = global.utils;
+const fs = require("fs");
+const path = require("path");
+const { getTime, drive } = global.utils;
 
 if (!global.temp.welcomeEvent)
 	global.temp.welcomeEvent = {};
@@ -7,127 +8,103 @@ if (!global.temp.welcomeEvent)
 module.exports = {
 	config: {
 		name: "welcome",
-		version: "2.0",
-		author: "Fixed by Ashe",
+		version: "1.7-custom",
+		author: "NTKhang + modified by you",
 		category: "events"
 	},
 
 	langs: {
+		vi: {
+			session1: "sáng",
+			session2: "trưa",
+			session3: "chiều",
+			session4: "tối",
+			welcomeMessage: "Cảm ơn bạn đã mời tôi vào nhóm!\nPrefix bot: %1\nĐể xem danh sách lệnh hãy nhập: %1help",
+			multiple1: "bạn",
+			multiple2: "các bạn",
+			defaultWelcomeMessage: "Xin chào {userName}.\nChào mừng bạn đến với {boxName}.\nChúc bạn có buổi {session} vui vẻ!"
+		},
 		en: {
 			session1: "morning",
 			session2: "noon",
 			session3: "afternoon",
 			session4: "evening",
-			session5: "night",
-			welcomeMessage: "Thank you for inviting me to the group!\nBot prefix: %1\nTo view all commands, type: %1help",
+			welcomeMessage: "Thank you for inviting me to the group!\nBot prefix: %1\nTo view the list of commands, please enter: %1help",
 			multiple1: "you",
 			multiple2: "you guys",
-			// এখানে {userNameTag} = mention tag
-			defaultWelcomeMessage: `🌸 Hello {userNameTag} 🌸\nWelcome {multiple} to the chat group: {boxName}\nHave a nice {session} 💖`
+			defaultWelcomeMessage: "Hello {userName}.\nWelcome {multiple} to the chat group: {boxName}\nHave a nice {session} 😊"
 		}
 	},
 
 	onStart: async ({ threadsData, message, event, api, getLang }) => {
-		if (event.logMessageType == "log:subscribe") {
-			const hours = moment.tz("Asia/Dhaka").hours(); // ✅ Dhaka time
-			const { threadID } = event;
-			const { nickNameBot } = global.GoatBot.config;
-			const prefix = global.utils.getPrefix(threadID);
-			const dataAddedParticipants = event.logMessageData.addedParticipants;
+		if (event.logMessageType == "log:subscribe")
+			return async function () {
+				const hours = getTime("HH");
+				const { threadID } = event;
+				const { nickNameBot } = global.GoatBot.config;
+				const prefix = global.utils.getPrefix(threadID);
+				const dataAddedParticipants = event.logMessageData.addedParticipants;
 
-			// যদি বট যোগ হয়
-			if (dataAddedParticipants.some((item) => item.userFbId == api.getCurrentUserID())) {
-				if (nickNameBot)
-					api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
-				return message.send(getLang("welcomeMessage", prefix));
-			}
-
-			// যদি নতুন মেম্বার জয়েন করে
-			if (!global.temp.welcomeEvent[threadID])
-				global.temp.welcomeEvent[threadID] = {
-					joinTimeout: null,
-					dataAddedParticipants: []
-				};
-
-			// push new members
-			global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
-
-			// clear old timeout
-			clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
-
-			// set new timeout
-			global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
-				const threadData = await threadsData.get(threadID);
-				if (threadData.settings.sendWelcomeMessage == false)
-					return;
-
-				const dataAddedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
-				const dataBanned = threadData.data.banned_ban || [];
-				const threadName = threadData.threadName;
-				const userName = [],
-					mentions = [];
-				let multiple = false;
-
-				if (dataAddedParticipants.length > 1)
-					multiple = true;
-
-				for (const user of dataAddedParticipants) {
-					if (dataBanned.some((item) => item.id == user.userFbId))
-						continue;
-					userName.push(user.fullName);
-					mentions.push({
-						tag: user.fullName,
-						id: user.userFbId
-					});
+				if (dataAddedParticipants.some(item => item.userFbId == api.getCurrentUserID())) {
+					if (nickNameBot)
+						api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
+					return message.send(getLang("welcomeMessage", prefix));
 				}
 
-				if (userName.length == 0) return;
+				if (!global.temp.welcomeEvent[threadID])
+					global.temp.welcomeEvent[threadID] = {
+						joinTimeout: null,
+						dataAddedParticipants: []
+					};
 
-				let { welcomeMessage = getLang("defaultWelcomeMessage") } = threadData.data;
+				global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
+				clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
 
-				const form = {
-					mentions: welcomeMessage.match(/\{userNameTag\}/g) ? mentions : null
-				};
+				global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
+					const threadData = await threadsData.get(threadID);
+					if (threadData?.settings?.sendWelcomeMessage === false) return;
 
-				welcomeMessage = welcomeMessage
-					.replace(/\{userName\}/g, userName.join(", "))
-					.replace(/\{userNameTag\}/g, () =>
-						mentions.map((m) => m.tag).join(", ")
-					)
-					.replace(/\{boxName\}|\{threadName\}/g, threadName)
-					.replace(
-						/\{multiple\}/g,
-						multiple ? getLang("multiple2") : getLang("multiple1")
-					)
-					.replace(
-						/\{session\}/g,
-						hours < 12
-							? getLang("session1") // সকাল
-							: hours < 15
-							? getLang("session2") // দুপুর
-							: hours < 18
-							? getLang("session3") // বিকাল
-							: hours < 21
-							? getLang("session4") // সন্ধ্যা
-							: getLang("session5") // রাত
-					);
+					const dataAddedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
+					const dataBanned = threadData?.data?.banned_ban || [];
+					const threadName = threadData.threadName;
+					const userName = [], mentions = [];
+					let multiple = false;
 
-				form.body = welcomeMessage;
+					if (dataAddedParticipants.length > 1)
+						multiple = true;
 
-				if (threadData.data.welcomeAttachment) {
-					const files = threadData.data.welcomeAttachment;
-					const attachments = files.reduce((acc, file) => {
-						acc.push(drive.getFile(file, "stream"));
-						return acc;
-					}, []);
-					form.attachment = (await Promise.allSettled(attachments))
-						.filter(({ status }) => status == "fulfilled")
-						.map(({ value }) => value);
-				}
+					for (const user of dataAddedParticipants) {
+						if (dataBanned.some(item => item.id == user.userFbId))
+							continue;
+						userName.push(user.fullName);
+						mentions.push({ tag: user.fullName, id: user.userFbId });
+					}
 
-				message.send(form);
-				delete global.temp.welcomeEvent[threadID];
-			}, 1500);
-		}
+					if (userName.length == 0) return;
+
+					let welcomeMessage = getLang("defaultWelcomeMessage");
+					welcomeMessage = welcomeMessage
+						.replace(/\{userName\}/g, userName.join(", "))
+						.replace(/\{userNameTag\}/g, userName.join(", "))
+						.replace(/\{boxName\}|\{threadName\}/g, threadName)
+						.replace(/\{multiple\}/g, multiple ? getLang("multiple2") : getLang("multiple1"))
+						.replace(/\{session\}/g,
+							hours <= 10 ? getLang("session1")
+								: hours <= 12 ? getLang("session2")
+									: hours <= 18 ? getLang("session3")
+										: getLang("session4"));
+
+					const form = {
+						body: welcomeMessage,
+						mentions,
+						attachment: fs.existsSync(path.join(__dirname, "assets", "welc.gif"))
+							? fs.createReadStream(path.join(__dirname, "assets", "welc.gif"))
+							: undefined
+					};
+
+					message.send(form);
+					delete global.temp.welcomeEvent[threadID];
+				}, 1500);
+			};
 	}
 };
