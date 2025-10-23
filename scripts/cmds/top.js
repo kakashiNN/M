@@ -1,46 +1,59 @@
-module.exports = {
+ module.exports = {
   config: {
     name: "top",
-    version: "1.4",
-    author: "SAIF x gpt🤡",
+    version: "2.0",
+    author: "@Ariyan",
     role: 0,
     shortDescription: {
-      en: "Top 15 Rich Users"
+      en: "Top 15 richest users"
     },
     longDescription: {
-      en: ""
+      en: "Shows the top 15 users with formatted money in K/M/B/T"
     },
     category: "group",
     guide: {
       en: "{pn}"
     }
   },
-  onStart: async function ({ api, args, message, event, usersData }) {
-    const allUsers = await usersData.getAll();
-    
-    // Sort users by money and take top 15
-    const topUsers = allUsers.sort((a, b) => b.money - a.money).slice(0, 15);
 
-    // Function to format numbers correctly
-    function formatNumber(num) {
-      if (num >= 1e15) return (num / 1e15).toFixed(2) + "Q"; // Quadrillion
-      if (num >= 1e12) return (num / 1e12).toFixed(2) + "T"; // Trillion
-      if (num >= 1e9) return (num / 1e9).toFixed(2) + "B"; // Billion
-      if (num >= 1e6) return (num / 1e6).toFixed(2) + "M"; // Million
-      if (num >= 1e3) return (num / 1e3).toFixed(2) + "K"; // Thousand
-      return num.toString(); // যদি 1K-এর নিচে হয়, তাহলে নরমাল দেখাবে
+  onStart: async function ({ message, usersData }) {
+    try {
+      const allUsers = await usersData.getAll();
+
+      if (!allUsers.length) {
+        return message.reply("❌ No user data found.");
+      }
+
+      const topUsers = allUsers
+        .sort((a, b) => (b.money || 0) - (a.money || 0))
+        .slice(0, 15);
+
+      const emojis = ["🥇", "🥈", "🥉"];
+
+      const formatMoneyShort = (num) => {
+        if (num >= 1_000_000_000_000) return (num / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '') + '𝐓$';
+        if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + '𝐁$';
+        if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + '𝐌$';
+        if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + '𝐊$';
+        return num.toString() + '$';
+      };
+
+      const topList = topUsers.map((user, index) => {
+        const name = user.name || "Unknown";
+        const money = formatMoneyShort(user.money || 0);
+        const rank = emojis[index] || `${index + 1}.`;
+        const indexNum = index + 1;
+
+        return `${rank} ${indexNum < 10 ? ' ' : ''}${indexNum}. ${name}: ${money}`;
+      });
+
+      const finalMessage = `👑 | 𝐓𝐨𝐩 𝟏𝟓 𝐑𝐢𝐜𝐡𝐞𝐬𝐭 𝐔𝐬𝐞𝐫𝐬:\n\n${topList.join("\n")}`;
+
+      await message.reply(finalMessage);
+
+    } catch (err) {
+      console.error(err);
+      message.reply("❌ An error occurred while retrieving the top list.");
     }
-
-    // Create leaderboard list
-    const topUsersList = topUsers.map((user, index) => {
-      const moneyFormatted = formatNumber(user.money || 0); // যদি টাকা না থাকে তাহলে "0" দেখাবে
-      const medals = ["🥇", "🥈", "🥉"];
-      return `${medals[index] || `${index + 1}.`} ${user.name} - ${moneyFormatted}`;
-    });
-
-    // Shortened header and compact design
-    const messageText = `👑 𝗧𝗢𝗣 𝗥𝗜𝗖𝗛𝗘𝗦𝗧 𝗨𝗦𝗘𝗥𝗦 👑\n━━━━━━━━━━━\n${topUsersList.join("\n")}`;
-
-    message.reply(messageText);
   }
 };

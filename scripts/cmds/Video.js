@@ -1,87 +1,96 @@
-module.exports = {
-  config: {
-    name: "video",
-    version: "1.1",
-    author: "kshitiz",//respect author dont change
-    countDown: 5,
-    role: 0,
-    shortDescription: "structure for category baed videos",
-    longDescription: "your actual discription",
-    category: "media",
-    guide: "{p}{n} category",
-  },
+const axios = require('axios');
+const yts = require("yt-search");
 
-  sentVideos: {
-    naruto: [],
-    bleach: [],
-    onepiece: [],
-                  // Add more categories as needed like naruto bleach onepiece
-  },
-
-  videos: {
-    naruto: [
-      "https://drive.google.com/uc?export=download&id=1OP2zmycLmFihRISVLzFwrw__LRBsF9GN"
-    ],
-    bleach: [
-      "https://drive.google.com/uc?export=download&id=1bds-i6swtqi2k4YCoglPKTV7kL7f-SF7"
-    ],
-    onepiece: [
-      "https://drive.google.com/uc?export=download&id=1QaK3EfNmbwAgpJm4czY8n8QRau9MXoaR"
-    ],
- },
-
-  onStart: async function ({ api, event, message, args }) {
-    const senderID = event.senderID;
-
-    const loadingMessage = await message.reply({
-      body: "Loading random anime video... Please wait! 🕐", // change this loading msg
-    });
-
-    if (args.length === 0) {
-      api.unsendMessage(loadingMessage.messageID);
-      return message.reply({
-        body: `Please specify a category. Available categories: ${Object.keys(this.videos).join(", ")}`,
-      });
-    }
-
-    const category = args[0].toLowerCase();
-
-    if (!this.videos.hasOwnProperty(category)) {
-      api.unsendMessage(loadingMessage.messageID);
-      return message.reply({
-        body: `Invalid category. Available categories: ${Object.keys(this.videos).join(", ")}`,
-      });
-    }
-
-    const availableVideos = this.videos[category].filter(video => !this.sentVideos[category].includes(video));
-
-    if (availableVideos.length === 0) {
-      this.sentVideos[category] = [];
-    }
-
-    const randomIndex = Math.floor(Math.random() * availableVideos.length);
-    const randomVideo = availableVideos[randomIndex];
-
-    this.sentVideos[category].push(randomVideo);
-
-    if (senderID !== null) {
-      message.reply({
-        body: `Enjoy the ${category} video... 🤍`,  // this is video body change this if you want
-        attachment: await global.utils.getStreamFromURL(randomVideo),
-      });
-
-      setTimeout(() => {
-        api.unsendMessage(loadingMessage.messageID);
-      }, 5000);  // its a time that unsend loading msg you can increase it 
-    }
-  },
+const baseApiUrl = async () => {
+    const base = await axios.get(
+        `https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`
+    );
+    return base.data.api;
 };
 
+(async () => {
+    global.apis = {
+        diptoApi: await baseApiUrl()
+    };
+})();
 
-/* guid to generate drive link
-1. upload your video on drive
-2. make the video acces anyone with the link 
-3. first upload all video and you can select all video and change access to anyone with the link for saving time
-4. now one by one copy link of video and go to website drive direct link converter 
-5. paste the link copy direct link and paste that in code continue like  this 
-*/
+async function getStreamFromURL(url, pathName) {
+    try {
+        const response = await axios.get(url, {
+            responseType: "stream"
+        });
+        response.data.path = pathName;
+        return response.data;
+    } catch (err) {
+        throw err;
+    }
+}
+
+global.utils = {
+    ...global.utils,
+    getStreamFromURL: global.utils.getStreamFromURL || getStreamFromURL
+};
+
+function getVideoID(url) {
+    const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
+    const match = url.match(checkurl);
+    return match ? match[1] : null;
+}
+
+const config = {
+    name: "video",
+    author: "Mesbah Saxx",
+    credits: "Mesbah Saxx",
+    version: "1.0.0",
+    role: 0,
+    hasPermssion: 0,
+    description: "",
+    usePrefix: true,
+    prfix: true,
+    category: "media",
+    commandCategory: "media",
+    cooldowns: 5,
+    countDown: 5,
+};
+
+async function onStart({ api, args, event }) {
+    try {
+        let videoID,w;
+        const url = args[0];
+
+        if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
+            videoID = getVideoID(url);
+            if (!videoID) {
+                await api.sendMessage("Invalid YouTube URL.", event.threadID, event.messageID);
+            }
+        } else {
+            const songName = args.join(' ');
+             w = await api.sendMessage(`Searching song "${songName}"... `, event.threadID);
+            const r = await yts(songName);
+            const videos = r.videos.slice(0, 50);
+
+            const videoData = videos[Math.floor(Math.random() * videos.length)];
+            videoID = videoData.videoId;
+        }
+
+        const { data: { title, quality, downloadLink } } = await axios.get(`${global.apis.diptoApi}/ytDl3?link=${videoID}&format=mp4`);
+
+        api.unsendMessage(w.messageID);
+        
+        const o = '.php';
+        const shortenedLink = (await axios.get(`https://tinyurl.com/api-create${o}?url=${encodeURIComponent(downloadLink)}`)).data;
+
+        await api.sendMessage({
+            body: `🔖 - 𝚃𝚒𝚝𝚕𝚎: ${title}\n✨ - 𝚀𝚞𝚊𝚕𝚒𝚝𝚢: ${quality}\n\n📥 - 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝙻𝚒𝚗𝚔: ${shortenedLink}`,
+            attachment: await global.utils.getStreamFromURL(downloadLink, title+'.mp4')
+        }, event.threadID, event.messageID);
+    } catch (e) {
+        api.sendMessage(e.message || "An error occurred.", event.threadID, event.messageID);
+    }
+}
+
+module.exports = {
+    config,
+    onStart,
+    run: onStart
+};
