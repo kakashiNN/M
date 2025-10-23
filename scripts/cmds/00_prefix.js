@@ -1,110 +1,134 @@
-const axios = require("axios");
-const fs = require("fs");
-const utils = global.utils;
+const fs = require("fs-extra");
+const { utils } = global;
+
+// ✅ Add allowed UID(s) here
+const allowedUIDs = ["61572240295227", ""]; // Replace with your UID(s)
 
 module.exports = {
-    config: {
-        name: "prefix",
-        version: "1.6",
-        author: "MR᭄﹅ MAHABUB﹅ メꪜ + MODIFIED BY NIROB",
-        countDown: 5,
-        role: 0,
-        description: "Change the bot's command prefix in your chat or globally (admin only)",
-        category: "Config",
-    },
-
-    langs: {
-        en: {
-            reset: "Your prefix has been reset to default: %1",
-            onlyAdmin: "Only admin can change the system bot prefix",
-            confirmGlobal: "Please react to this message to confirm changing the system bot prefix",
-            confirmThisThread: "Please react to this message to confirm changing the prefix in your chat",
-            successGlobal: "Changed system bot prefix to: %1",
-            successThisThread: "Changed prefix in your chat to: %1",
-            myPrefix: 
-`❀───･｡ﾟ: 𝑴𝒚 𝑷𝒓𝒆𝒇𝒊𝒙 :ﾟ｡･───❀
-
- ✎﹏﹏﹏𝐆𝐥𝐨𝐛𝐚𝐥 ➺ %1  
- ✎﹏﹏﹏𝐆𝐫𝐨𝐮𝐩  ➺ %2  
-
- ✎﹏﹏﹏𝐀𝐝𝐦𝐢𝐧 ➺ N I R O B  ‹𝟹
-
- ✎﹏﹏﹏𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤 ➺  
- https://www.facebook.com/nirob.nahad007`
-        }
-    },
-
-    onStart: async function ({ message, role, args, commandName, event, threadsData, getLang }) {
-        if (!args[0]) return message.reply("Please provide a new prefix or use 'reset'.");
-
-        if (args[0] === "reset") {
-            await threadsData.set(event.threadID, null, "data.prefix");
-            return message.reply(getLang("reset", global.GoatBot.config.prefix));
-        }
-
-        const newPrefix = args[0];
-        if (newPrefix.length > 5 || newPrefix.length === 0)
-            return message.reply("Prefix should be between 1 to 5 characters.");
-
-        const formSet = {
-            commandName,
-            author: event.senderID,
-            newPrefix
-        };
-
-        if (args[1] === "-g") {
-            if (role < 2) return message.reply(getLang("onlyAdmin"));
-            else formSet.setGlobal = true;
-        } else {
-            formSet.setGlobal = false;
-        }
-
-        return message.reply(
-            args[1] === "-g" ? getLang("confirmGlobal") : getLang("confirmThisThread"),
-            (err, info) => {
-                formSet.messageID = info.messageID;
-                global.GoatBot.onReaction.set(info.messageID, formSet);
-
-                setTimeout(() => {
-                    global.GoatBot.onReaction.delete(info.messageID);
-                }, 60000);
-            }
-        );
-    },
-
-    onChat: async function ({ event, message, getLang }) {  
-        if (event.body && event.body.toLowerCase() === "prefix") {  
-            try {
-                const response = await axios.get("https://mahabub-apis.vercel.app/prefix");
-                const videoUrl = response.data.data;
-
-                if (videoUrl) {
-                    return message.reply({
-                        body: getLang("myPrefix", global.GoatBot.config.prefix, utils.getPrefix(event.threadID)),
-                        attachment: await global.utils.getStreamFromURL(videoUrl)
-                    });
-                } else {
-                    return message.reply("No video available at the moment.");
-                }
-
-            } catch (error) {
-                console.error("Error fetching video:", error);
-                return message.reply("An error occurred while fetching the video.");
-            }
-        }  
-    },
-
-    onReaction: async function ({ message, threadsData, event, Reaction, getLang }) {
-        const { author, newPrefix, setGlobal } = Reaction;
-        if (event.userID !== author) return;
-
-        if (setGlobal) {
-            global.GoatBot.config.prefix = newPrefix;
-            fs.writeFileSync(global.client.dirConfig, JSON.stringify(global.GoatBot.config, null, 2));
-            return message.reply(getLang("successGlobal", newPrefix));
-        } else {
-            await threadsData.set(event.threadID, newPrefix, "data.prefix");
-            return message.reply(getLang("successThisThread", newPrefix));
-        }
+  config: {
+    name: "prefix",
+    version: "1.6",
+    author: "NTkhang || Kari Gori By Xos Eren || UID Protect by NIROB",
+    countDown: 5,
+    role: 0,
+    description: "Change the bot prefix in your chat box or globally (admin only, UID protected)",
+    category: "⚙️ Configuration",
+    guide: {
+      en:
+        "┌─『 Prefix Settings 』─┐\n" +
+        "│\n" +
+        "│ 🔹 {pn} <prefix>\n" +
+        "│     Set prefix for this chat\n" +
+        "│     Example: {pn} $\n" +
+        "│\n" +
+        "│ 🔹 {pn} <prefix> -g\n" +
+        "│     Set global prefix (Admin only)\n" +
+        "│     Example: {pn} $ -g\n" +
+        "│\n" +
+        "│ ♻️ {pn} reset\n" +
+        "│     Reset to default prefix\n" +
+        "│\n" +
+        "└──────────────────────┘"
     }
+  },
+
+  langs: {
+    en: {
+      reset:
+        "━━━━━━━━━━━━━━━━━\n" +
+        ` ✅ Reset to default: %1\n` +
+        "━━━━━━━━━━━━━━━━━",
+      onlyAdmin:
+        "┌─『 Permission Denied 』─┐\n" +
+        "│ ⛔ Only bot admins can change global prefix!\n" +
+        "└──────────────────────────┘",
+      noPermission:
+        "┌─『 UID Protected 』─┐\n" +
+        "│ 🚫 You are not authorized to use this command.\n" +
+        "│ Contact the bot owner if needed.\n" +
+        "└──────────────────────┘",
+      confirmGlobal:
+        "\n" + " ⚙️ React to confirm global prefix update.\n" + "",
+      confirmThisThread:
+        "\n" + " ⚙️ React to confirm this chat's prefix update.\n" + "\n",
+      successGlobal:
+        "\n" + `✅ Global prefix: %1\n` + "",
+      successThisThread:
+        "𝗕𝗕𝗬 🐥🎀\n" +
+        `𝗣𝗿𝗲𝗳𝗶𝘅 𝗰𝗵𝗮𝗻𝗴𝗲𝗱 𝘁𝗼  %1\n` +
+        " 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 ✅",
+      myPrefix:
+        "┌─『 Current Prefix 』─┐\n" +
+        `│ 🌍 Global: %1\n` +
+        `│ 💬 This Chat: %2\n` +
+        "│\n" +
+        `│ ➤ Type: ${2}help\n` +
+        "└─────────────────────┘"
+    }
+  },
+
+  onStart: async function ({ message, role, args, commandName, event, threadsData, getLang }) {
+    // ✅ UID protection check
+    if (!allowedUIDs.includes(event.senderID)) {
+      return message.reply(getLang("noPermission"));
+    }
+
+    if (!args[0]) return message.SyntaxError();
+
+    if (args[0] === "reset") {
+      await threadsData.set(event.threadID, null, "data.prefix");
+      return message.reply(getLang("reset", global.GoatBot.config.prefix));
+    }
+
+    const newPrefix = args[0];
+    const formSet = {
+      commandName,
+      author: event.senderID,
+      newPrefix,
+      setGlobal: args[1] === "-g"
+    };
+
+    if (formSet.setGlobal && role < 2) {
+      return message.reply(getLang("onlyAdmin"));
+    }
+
+    const confirmMessage = formSet.setGlobal ? getLang("confirmGlobal") : getLang("confirmThisThread");
+    return message.reply(confirmMessage, (err, info) => {
+      formSet.messageID = info.messageID;
+      global.GoatBot.onReaction.set(info.messageID, formSet);
+    });
+  },
+
+  onReaction: async function ({ message, threadsData, event, Reaction, getLang }) {
+    const { author, newPrefix, setGlobal } = Reaction;
+    if (event.userID !== author) return;
+
+    if (setGlobal) {
+      global.GoatBot.config.prefix = newPrefix;
+      fs.writeFileSync(global.client.dirConfig, JSON.stringify(global.GoatBot.config, null, 2));
+      return message.reply(getLang("successGlobal", newPrefix));
+    }
+
+    await threadsData.set(event.threadID, newPrefix, "data.prefix");
+    return message.reply(getLang("successThisThread", newPrefix));
+  },
+
+  onChat: async function ({ event, message, threadsData }) {
+    const globalPrefix = global.GoatBot.config.prefix;
+    const threadPrefix = (await threadsData.get(event.threadID, "data.prefix")) || globalPrefix;
+
+    if (event.body && event.body.toLowerCase() === "prefix") {
+      return message.reply({
+        body:
+          "━━━━━━━━━━━━━━━━━\n" +
+          "       𝐏𝐫𝐞𝐟𝐢𝐱 𝐢𝐧𝐟𝐨𝐫𝐦𝐚𝐭𝐢𝐨𝐧 ⬇ :    \n" +
+          "                                                   \n" +
+          ` 🌍 𝗦𝘆𝘀𝘁𝗲𝗺 𝗽𝗿𝗲𝗳𝗶𝘅 : ${globalPrefix}\n` +
+          ` 💬 𝗚𝗿𝗼𝘂𝗽 𝗽𝗿𝗲𝗳𝗶𝘅  : ${threadPrefix}\n` +
+          ` ➤ ${threadPrefix}𝗵𝗲𝗹𝗽 𝘁𝗼 𝘀𝗲𝗲 𝗮𝗹𝗹 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲 𝗰𝗺𝗱𝘀\n` +
+          "━━━━━━━━━━━━━━━━━",
+        attachment: await utils.getStreamFromURL("https://files.catbox.moe/b7yrgo.mp4")
+      });
+    }
+  }
 };

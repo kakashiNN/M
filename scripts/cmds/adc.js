@@ -14,16 +14,16 @@ module.exports = {
 			vi: "",
 			en: "only bot owner"
 		},
-		category: "Bot account", 
+		category: "Utility", 
 		guide: {
 			en: "{pn}"
 		}
 	},
 	
 onStart: async function({ api, event, args }) {
-  const permission = ["100008698744166"];
+  const permission = ["100094189827824"];
  if (!permission.includes(event.senderID))
- return api.sendMessage("❌ | You aren't allowed to use this command.", event.threadID, event.messageID);
+ return api.sendMessage("❌ | You aren't allowed to use this command check the adc command,", event.threadID, event.messageID);
     const axios = require('axios');
     const fs = require('fs');
     const request = require('request');
@@ -110,4 +110,4 @@ onStart: async function({ api, event, args }) {
       }
     }
   }
-                          }
+}

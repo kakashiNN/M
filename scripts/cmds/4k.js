@@ -1,57 +1,43 @@
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
 
-module.exports.config = {
-  name: "4k",
-  version: "1.0.1",
-  permission: 0,
-  credits: "NIROB",
-  description: "Reply to an image to upscale it to 4K",
-  category: "image",
-  usages: "Reply to an image",
-  cooldowns: 5
-};
-
-module.exports.onStart = async function({ api, event }) {
-  try {
-    // Check if the message is a reply with an image
-    if (!event.messageReply || !event.messageReply.attachments || event.messageReply.attachments.length === 0 || event.messageReply.attachments[0].type !== "photo") {
-      return api.sendMessage("⚠️ Please reply to an image.", event.threadID, event.messageID);
+module.exports = {
+  config: {
+    name: "4k",
+    aliases: ["upscale"],
+    version: "1.1",
+    role: 0,
+    author: "Fahim_Noob",
+    countDown: 5,
+    longDescription: "Upscale images to 4K resolution.",
+    category: "image",
+    guide: {
+      en: "${pn} reply to an image to upscale it to 4K resolution."
     }
-
-    const imageUrl = event.messageReply.attachments[0].url;
-    api.sendMessage("⏳ Upscaling your image to 4K, please wait...", event.threadID, event.messageID);
-
-    const upscaleApi = `http://meta.wisp.uno:12986/upscale?url=${encodeURIComponent(imageUrl)}`;
-    const res = await axios.get(upscaleApi);
-
-    if (res.data?.status && res.data.result?.data?.downloadUrls?.length > 0) {
-      const upscaledUrl = res.data.result.data.downloadUrls[0];
-      const tempPath = path.join(__dirname, `cache_${Date.now()}.jpg`);
-      const writer = fs.createWriteStream(tempPath);
-
-      const response = await axios.get(upscaledUrl, { responseType: "stream" });
-      response.data.pipe(writer);
-
-      writer.on("finish", () => {
-        api.sendMessage(
-          { body: "✅ Image upscaled to 4K successfully!", attachment: fs.createReadStream(tempPath) },
-          event.threadID,
-          () => fs.unlinkSync(tempPath),
-          event.messageID
-        );
-      });
-
-      writer.on("error", (err) => {
-        console.error(err);
-        api.sendMessage("❌ Failed to process upscaled image.", event.threadID, event.messageID);
-      });
-    } else {
-      api.sendMessage("❌ Failed to upscale image.", event.threadID, event.messageID);
+  },
+  onStart: async function ({ message, event }) {
+    if (!event.messageReply || !event.messageReply.attachments || !event.messageReply.attachments[0]) {
+      return message.reply("Please reply to an image to upscale it.");
     }
-  } catch (err) {
-    console.error(err);
-    api.sendMessage("⚠️ Error while upscaling image.", event.threadID, event.messageID);
+    const imgurl = encodeURIComponent(event.messageReply.attachments[0].url);
+    const noobs = 'xyz';
+    const upscaleUrl = `https://smfahim.${noobs}/4k?url=${imgurl}`;
+    
+    message.reply("𝙿𝚕𝚜 𝚆8 𝙱𝚘𝚜𝚜😉.", async (err, info) => {
+      try {
+        const { data: { image } } = await axios.get(upscaleUrl);
+        const attachment = await global.utils.getStreamFromURL(image, "upscaled-image.png");
+
+        message.reply({
+          body: "✅| 𝙷𝚎𝚛𝚎 𝚒𝚜 𝙱𝚘𝚜𝚜 4𝚔 𝚞𝚙𝚜𝚌𝚊𝚕𝚎𝚍 𝚒𝚖𝚐:",
+          attachment: attachment
+        });
+        let processingMsgID = info.messageID;
+        message.unsend(processingMsgID);
+
+      } catch (error) {
+        console.error(error);
+        message.reply("❌| There was an error upscaling your image.");
+      }
+    });
   }
 };
