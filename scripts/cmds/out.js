@@ -1,30 +1,27 @@
-const axios = require("axios");
-const fs = require("fs-extra");
-const request = require("request");
 module.exports = {
-config: {
-name: "Out",
-aliases: ["l"],
-version: "1.0",
-author: "Sandy",
-countDown: 5,
-role: 2,
-shortDescription: "bot will leave gc",
-longDescription: "",
-category: "admin",
-guide: {
-vi: "{pn} [tid,blank]",
-en: "{pn} [tid,blank]"
-}
-},
+	config: {
+		name: "out",
+		version: "1.0",
+		author: "XyryllPanget",
+		countDown: 5,
+		role: 2,
+		shortDescription: {
+			vi: "",
+			en: "kick 🦶 bot from gc by owner bot"
+		},
+		longDescription: {
+			vi: "",
+			en: "remove bot from group "
+		},
+		category: "owner",
+		guide: {
+			vi: "",
+			en: "just write غادر"
+    }
+ },
+  onStart: async function ({ api, args, message, event }) {
 
-onStart: async function ({ api,event,args, message }) {
-var id;
-if (!args.join(" ")) {
-id = event.threadID;
-} else {
-id = parseInt(args.join(" "));
-}
-return api.sendMessage('▣ 𝐊𝐚𝐤𝐚𝐬𝐡𝐢 𝐁𝐨𝐭 ꨄ︎ 𝗟𝗘𝗔𝗩𝗘:\n》Ami toder sukh dewar jonno Ashchilam tora etar joggo na.\n\n➤ 𝐎𝐲 𝐌𝐚𝐦𝐦𝐢 𝐑𝐞', id, () => api.removeUserFromGroup(api.getCurrentUserID(), id))
-}
+      if (!args[0]) return api.removeUserFromGroup(api.getCurrentUserID(), event.threadID);
+        if (!isNaN(args[0])) return api.removeUserFromGroup(api.getCurrentUserID(), args.join(" "));
+  }
 }

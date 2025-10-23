@@ -5,9 +5,9 @@ const fs = require("fs-extra");
 module.exports = {
     config: {
         name: "pair",
-        countDown: 5,
+        countDown: 8,
         role: 0,
-        category: "LOVE",
+        category: "𝐋𝐎𝐕𝐄",
     },
     onStart: async function ({ api, event }) {
         let pathImg = __dirname + "/cache/background.png";

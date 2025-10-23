@@ -28,15 +28,8 @@ module.exports = {
 	onStart: async function ({ event, message, usersData, args, getLang }) {
 		const uid1 = event.senderID;
 		const uid2 = Object.keys(event.mentions)[0];
-		
-		// Check if the mentioned user is the restricted ID
-		if (uid2 === "100078140834638") {
-			return message.reply("Slap yourself Dude 🐸🐸!");
-		}
-
 		if (!uid2)
 			return message.reply(getLang("noTag"));
-			
 		const avatarURL1 = await usersData.getAvatarUrl(uid1);
 		const avatarURL2 = await usersData.getAvatarUrl(uid2);
 		const img = await new DIG.Batslap().getImage(avatarURL1, avatarURL2);
@@ -49,4 +42,3 @@ module.exports = {
 		}, () => fs.unlinkSync(pathSave));
 	}
 };
-  

@@ -1,27 +1,26 @@
+const axios = require("axios");
+
 module.exports = {
   config: {
     name: "spy",
+    aliases: ["whoishe", "whoisshe", "whoami", "atake"],
     version: "1.0",
-    author: "Shikaki",
-    countDown: 60,
     role: 0,
-    shortDescription: "Get user information and avatar",
-    longDescription: "Get user information and avatar by mentioning",
-    category: "image",
+    author: "Redwan",
+    Description: "Get user information and profile photo",
+    category: "information",
+    countDown: 10,
   },
 
-   onStart: async function ({ event, message, usersData, api, args, getLang }) {
-    let avt;
+  onStart: async function ({ event, message, usersData, api, args }) {
     const uid1 = event.senderID;
     const uid2 = Object.keys(event.mentions)[0];
     let uid;
 
     if (args[0]) {
-      // Check if the argument is a numeric UID
       if (/^\d+$/.test(args[0])) {
         uid = args[0];
       } else {
-        // Check if the argument is a profile link
         const match = args[0].match(/profile\.php\?id=(\d+)/);
         if (match) {
           uid = match[1];
@@ -30,37 +29,40 @@ module.exports = {
     }
 
     if (!uid) {
-      // If no UID was extracted from the argument, use the default logic
       uid = event.type === "message_reply" ? event.messageReply.senderID : uid2 || uid1;
     }
 
-    api.getUserInfo(uid, async (err, userInfo) => {
-      if (err) {
-        return message.reply("Failed to retrieve user information.");
-      }
+    const userInfo = await api.getUserInfo(uid);
+    const avatarUrl = await usersData.getAvatarUrl(uid);
 
-      const avatarUrl = await usersData.getAvatarUrl(uid);
+    let genderText;
+    switch (userInfo[uid].gender) {
+      case 1:
+        genderText = "𝙶𝚒𝚛𝚕🙋🏻‍♀️";
+        break;
+      case 2:
+        genderText = "Boy🙋🏻‍♂️";
+        break;
+      default:
+        genderText = "𝚄𝚗𝚔𝚗𝚘𝚠𝚗🤷🏻‍♂️";
+    }
 
-      // Gender mapping
-      let genderText;
-      switch (userInfo[uid].gender) {
-        case 1:
-          genderText = "Girl";
-          break;
-        case 2:
-          genderText = "Boy";
-          break;
-        default:
-          genderText = "Unknown";
-      }
+    const position = userInfo[uid].type;
 
-      // Construct and send the user's information with avatar
-      const userInformation = `❏ Name: ${userInfo[uid].name}\n❏ Profile URL: ${userInfo[uid].profileUrl}\n❏ Gender: ${genderText}\n❏ User Type: ${userInfo[uid].type}\n❏ Is Friend: ${userInfo[uid].isFriend ? "Yes" : "No"}\n❏ Is Birthday today: ${userInfo[uid].isBirthday ? "Yes" : "No"}`;
+    const userInformation = `
+╭────[ 𝐔𝐒𝐄𝐑 𝐈𝐍𝐅𝐎 ]
+├‣ 𝙽𝚊𝚖𝚎: ${userInfo[uid].name}
+├‣ 𝙶𝚎𝚗𝚍𝚎𝚛: ${genderText}
+├‣ 𝚄𝙸𝙳: ${uid}
+├‣ 𝙲𝚕𝚊𝚜𝚜: ${position ? position.toUpperCase() : "𝙽𝚘𝚛𝚖𝚊𝚕 𝚄𝚜𝚎𝚛🥺"}
+├‣ 𝚄𝚜𝚎𝚛𝚗𝚊𝚖𝚎: ${userInfo[uid].vanity ? userInfo[uid].vanity : "𝙽𝚘𝚗𝚎"}
+├‣ 𝙿𝚛𝚘𝚏𝚒𝚕𝚎 𝚄𝚁𝙻: ${userInfo[uid].profileUrl}
+├‣ 𝙱𝚒𝚛𝚝𝚑𝚍𝚊𝚢: ${userInfo[uid].isBirthday !== false ? userInfo[uid].isBirthday : "𝙿𝚛𝚒𝚟𝚊𝚝𝚎"}
+╰‣ 𝙵𝚛𝚒𝚎𝚗𝚍 𝚠𝚒𝚝𝚑 𝚋𝚘𝚝: ${userInfo[uid].isFriend ? "𝚈𝚎𝚜✅" : "𝙽𝚘❎"}`;
 
-      message.reply({
-        body: userInformation,
-        attachment: await global.utils.getStreamFromURL(avatarUrl)
-      });
+    message.reply({
+      body: userInformation,
+      attachment: await global.utils.getStreamFromURL(avatarUrl),
     });
-  }
+  },
 };

@@ -1,172 +1,109 @@
-const { createCanvas, loadImage } = require('canvas');
-const fs = require('fs');
-const path = require("path");
+const { loadImage, createCanvas } = require("canvas");
+const axios = require("axios");
+const fs = require("fs-extra");
 
 module.exports = {
-  config: {
-    name: "pair5",
-    author: 'Arijit',
-    category: "LOVE"
-  },
+	config: {
+		name: "pair2",
+		countDown: 8,
+		role: 0,
+		category: "fun",
+		shortDescription: {
+			en: "",
+		},
+	},
+	onStart: async function ({ api, event, args, usersData, threadsData }) {
+		let pathImg = __dirname + "/cache/background.png";
+		let pathAvt1 = __dirname + "/cache/Avtmot.png";
+		let pathAvt2 = __dirname + "/cache/Avthai.png";
 
-  onStart: async function ({ api, event, usersData }) {
-    try {
-      // Unicode bold converter
-      function toBoldUnicode(name) {
-        const boldAlphabet = {
-          "a": "𝐚", "b": "𝐛", "c": "𝐜", "d": "𝐝", "e": "𝐞", "f": "𝐟", "g": "𝐠", "h": "𝐡", "i": "𝐢", "j": "𝐣",
-          "k": "𝐤", "l": "𝐥", "m": "𝐦", "n": "𝐧", "o": "𝐨", "p": "𝐩", "q": "𝐪", "r": "𝐫", "s": "𝐬", "t": "𝐭",
-          "u": "𝐮", "v": "𝐯", "w": "𝐰", "x": "𝐱", "y": "𝐲", "z": "𝐳", "A": "𝐀", "B": "𝐁", "C": "𝐂", "D": "𝐃",
-          "E": "𝐄", "F": "𝐅", "G": "𝐆", "H": "𝐇", "I": "𝐈", "J": "𝐉", "K": "𝐊", "L": "𝐋", "M": "𝐌", "N": "𝐍",
-          "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓", "U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗",
-          "Y": "𝐘", "Z": "𝐙", "0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8",
-          "9": "9", " ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
-        };
-        return name.split('').map(char => boldAlphabet[char] || char).join('');
-      }
+		var id1 = event.senderID;
+		var name1 = "User1"; // Replace with function that retrieves the name of the user
+		var ThreadInfo = await api.getThreadInfo(event.threadID);
+		var all = ThreadInfo.userInfo;
+		for (let c of all) {
+			if (c.id == id1) var gender1 = c.gender;
+		}
+		const botID = api.getCurrentUserID();
+		let ungvien = [];
+		if (gender1 == "FEMALE") {
+			for (let u of all) {
+				if (u.gender == "MALE") {
+					if (u.id !== id1 && u.id !== botID) ungvien.push(u.id);
+				}
+			}
+		} else if (gender1 == "MALE") {
+			for (let u of all) {
+				if (u.gender == "FEMALE") {
+					if (u.id !== id1 && u.id !== botID) ungvien.push(u.id);
+				}
+			}
+		} else {
+			for (let u of all) {
+				if (u.id !== id1 && u.id !== botID) ungvien.push(u.id);
+			}
+		}
+		var id2 = ungvien[Math.floor(Math.random() * ungvien.length)];
+		var name2 = "User2"; // Replace with function that retrieves the name of the user
+		var rd1 = Math.floor(Math.random() * 100) + 1;
+		var cc = ["0", "-1", "99,99", "-99", "-100", "101", "0,01"];
+		var rd2 = cc[Math.floor(Math.random() * cc.length)];
+		var djtme = [`${rd1}`, `${rd1}`, `${rd1}`, `${rd1}`, `${rd1}`, `${rd2}`, `${rd1}`, `${rd1}`, `${rd1}`, `${rd1}`];
 
-      // Function to convert numbers to cute Unicode
-      function toCuteNumber(num) {
-        const cuteDigits = { "0":"𝟢","1":"𝟣","2":"𝟤","3":"𝟥","4":"𝟦","5":"𝟧","6":"𝟨","7":"𝟩","8":"𝟪","9":"𝟫" };
-        return num.toString().split('').map(d => cuteDigits[d] || d).join('');
-      }
+		var tile = djtme[Math.floor(Math.random() * djtme.length)];
 
-      const threadInfo = await api.getThreadInfo(event.threadID);
-      const participants = threadInfo.participantIDs;
+		var background = [
+			"https://i.postimg.cc/wjJ29HRB/background1.png",
+			"https://i.postimg.cc/zf4Pnshv/background2.png",
+			"https://i.postimg.cc/5tXRQ46D/background3.png",
+		];
+		var rd = background[Math.floor(Math.random() * background.length)];
+		let getAvtmot = (
+			await axios.get(`https://graph.facebook.com/${id1}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, {
+				responseType: "arraybuffer",
+			})
+		).data;
+		fs.writeFileSync(pathAvt1, Buffer.from(getAvtmot, "utf-8"));
+		let getAvthai = (
+			await axios.get(`https://graph.facebook.com/${id2}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, {
+				responseType: "arraybuffer",
+			})
+		).data;
+		fs.writeFileSync(pathAvt2, Buffer.from(getAvthai, "utf-8"));
 
-      let males = [];
-      let females = [];
+		let getbackground = (
+			await axios.get(`${rd}`, {
+				responseType: "arraybuffer",
+			})
+		).data;
+		fs.writeFileSync(pathImg, Buffer.from(getbackground, "utf-8"));
 
-      for (let uid of participants) {
-        try {
-          const user = await usersData.get(uid);
-          if (!user || !user.gender) continue;
-
-          if (user.gender === 2) males.push(user);     // male
-          else if (user.gender === 1) females.push(user); // female
-        } catch (e) { continue; }
-      }
-
-      const sender = await usersData.get(event.senderID);
-      if (!sender || !sender.gender) {
-        return api.sendMessage("❌ Cannot detect your gender. Please update your profile.", event.threadID, event.messageID);
-      }
-
-      let male, female;
-      if (sender.gender === 2) {
-        male = sender;
-        if (females.length === 0) {
-          return api.sendMessage("❌ No female members found in this group to pair with you.", event.threadID, event.messageID);
-        }
-        female = females[Math.floor(Math.random() * females.length)];
-      } else if (sender.gender === 1) {
-        female = sender;
-        if (males.length === 0) {
-          return api.sendMessage("❌ No male members found in this group to pair with you.", event.threadID, event.messageID);
-        }
-        male = males[Math.floor(Math.random() * males.length)];
-      } else {
-        return api.sendMessage("❌ Unsupported gender type.", event.threadID, event.messageID);
-      }
-
-      const name1 = male.name;
-      const name2 = female.name;
-
-      const styledName1 = toBoldUnicode(name1);
-      const styledName2 = toBoldUnicode(name2);
-
-      const avatarURL1 = await usersData.getAvatarUrl(male.userID);
-      const avatarURL2 = await usersData.getAvatarUrl(female.userID);
-
-      // Love % randomizer
-      const funnyValues = ["-99", "-100", "0", "101", "0.01", "99.99"];
-      const normal = Math.floor(Math.random() * 100) + 1;
-      const lovePercent = Math.random() < 0.2
-        ? funnyValues[Math.floor(Math.random() * funnyValues.length)]
-        : normal;
-
-      const lovePercentCute = toCuteNumber(lovePercent);
-
-      // Canvas setup
-      const width = 1365, height = 768;
-      const canvas = createCanvas(width, height);
-      const ctx = canvas.getContext('2d');
-
-      const background = await loadImage("https://files.catbox.moe/rfv1fa.jpg");
-      const avatar1 = await loadImage(avatarURL1);
-      const avatar2 = await loadImage(avatarURL2);
-
-      ctx.drawImage(background, 0, 0, width, height);
-
-      function drawCircleImage(img, x, y, size) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(img, x, y, size, size);
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.arc(x + size / 2, y + size / 2, size / 2 + 3, 0, Math.PI * 2, true);
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "white";
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 15;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
-
-      const avatarSize = 210;
-      drawCircleImage(avatar1, 220, 95, avatarSize);
-      drawCircleImage(avatar2, 920, 130, avatarSize);
-
-      ctx.font = "bold 36px Arial";
-      ctx.textAlign = "center";
-      ctx.fillStyle = "yellow";
-      ctx.shadowColor = "black";
-      ctx.shadowBlur = 8;
-      ctx.fillText(styledName1, 220 + avatarSize / 2, 480);
-      ctx.fillText(styledName2, 920 + avatarSize / 2, 480);
-
-      ctx.font = "bold 42px Arial";
-      ctx.fillStyle = "white";
-      ctx.shadowColor = "blue";
-      ctx.shadowBlur = 12;
-      ctx.fillText(`${lovePercent}%`, width / 2, 330);
-      ctx.shadowBlur = 0;
-
-      const outputPath = path.join(__dirname, 'pair_output.png');
-      const out = fs.createWriteStream(outputPath);
-      const stream = canvas.createPNGStream();
-      stream.pipe(out);
-
-      out.on('finish', () => {
-        const message =
-`💞 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐬 💞
-
-✨ 𝓜𝓮𝓮𝓽 𝓽𝓱𝓮 𝓵𝓸𝓿𝓮𝓵𝔂 𝓹𝓪𝓲𝓻 ✨
-
-• {${male.userID}} 𝐌𝐲 𝐚𝐝𝐨𝐫𝐚𝐛𝐥𝐞 🎀
-• {${female.userID}} 𝐒𝐰𝐞𝐞𝐭𝐢𝐞 💖
-
-💌 𝐌𝐚𝐲 𝐲𝐨𝐮 𝐬𝐡𝐚𝐫𝐞 𝐞𝐧𝐝𝐥𝐞𝐬𝐬 𝐥𝐚𝐮𝐠𝐡𝐭𝐞𝐫 𝐚𝐧𝐝 𝐡𝐚𝐩𝐩𝐢𝐧𝐞𝐬𝐬 💕
-
-💘 𝐋𝐨𝐯𝐞 𝐩𝐞𝐫𝐜𝐞𝐧𝐭𝐚𝐠𝐞: ${lovePercentCute}% 💓`;
-
-        api.sendMessage({
-          body: message,
-          mentions: [
-            { tag: name1, id: male.userID },
-            { tag: name2, id: female.userID }
-          ],
-          attachment: fs.createReadStream(outputPath)
-        }, event.threadID, () => fs.unlinkSync(outputPath), event.messageID);
-      });
-
-    } catch (error) {
-      console.error(error);
-      return api.sendMessage("❌ An error occurred: " + error.message, event.threadID, event.messageID);
-    }
-  }
+		let baseImage = await loadImage(pathImg);
+		let baseAvt1 = await loadImage(pathAvt1);
+		let baseAvt2 = await loadImage(pathAvt2);
+		let canvas = createCanvas(baseImage.width, baseImage.height);
+		let ctx = canvas.getContext("2d");
+		ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+		ctx.drawImage(baseAvt1, 100, 150, 300, 300);
+		ctx.drawImage(baseAvt2, 900, 150, 300, 300);
+		const imageBuffer = canvas.toBuffer();
+		fs.writeFileSync(pathImg, imageBuffer);
+		fs.removeSync(pathAvt1);
+		fs.removeSync(pathAvt2);
+		return api.sendMessage(
+			{
+				body: `Congratulations ${name1} successfully paired with ${name2}\nThe odds are ${tile}%`,
+				mentions: [
+					{
+						tag: `${name2}`,
+						id: id2,
+					},
+				],
+				attachment: fs.createReadStream(pathImg),
+			},
+			event.threadID,
+			() => fs.unlinkSync(pathImg),
+			event.messageID
+		);
+	},
 };

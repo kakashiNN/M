@@ -1,34 +1,39 @@
-const axios = require('axios');
-module.exports = {
-  config: {
-    name: "ss",
-    aliases: ["screenshot"],
-    version: "1.0",
-    author: "MILAN",
-    countDown: 5,
-    role: 0,
-    shortDescription: "get screenshot of website",
-    longDescription: "get screenshot of website",
-    category: "media",
-    guide: "{pn} link"
-  },
+const axios = require("axios");
+const baseApiUrl = async () => {
+  const base = await axios.get(
+    `https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`,
+  );
+  return base.data.api;
+};
 
-  onStart: async function ({ message, args }) {
-    const url = args.join(" ");
-    if (!url) {
-      return message.reply(`⚠️ | Please enter an url!`);
-    } else {
-      try {
-        const BASE_URL = `https://milanbhandari.imageapi.repl.co/screenshot?url=${encodeURIComponent(url)}`;
-        const form = {
-          body: ``
-        };
-        form.attachment = []
-        form.attachment[0] = await global.utils.getStreamFromURL(BASE_URL);
-        message.reply(form); 
-      } catch (e) { 
-        message.reply(`Error`);
-      }
-    }
+module.exports.config = {
+  name: "ss",
+  version: "1.0",
+  author: "dipto",
+  role: 2,
+  description: "Take a screenshot of a website",
+  category: "utility",
+  guide: { en: "screenshot [URL]" },
+  coolDowns: 5,
+};
+exports.onStart = async function ({ api, event, args }) {
+  const url = args.join(" ");
+  if (!url) {
+    return api.sendMessage("Please provide a URL.", event.threadID);
+  }
+  try {
+    api.sendMessage(
+      {
+        body: "Screenshot Saved <😽",
+        attachment: await global.utils.getStreamFromURL(
+          `${await baseApiUrl()}/ss?url=${url}`,
+        ),
+      },
+      event.threadID,
+      event.messageID,
+    );
+  } catch (error) {
+    console.error("Error taking screenshot:", error);
+    api.sendMessage("Failed to take a screenshot.", event.threadID);
   }
 };

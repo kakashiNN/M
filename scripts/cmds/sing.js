@@ -18,7 +18,7 @@ function deleteAfterTimeout(filePath, timeout = 15000) {
 module.exports = {
   config: {
     name: "song",
-    aliases: ["music"],
+    aliases: ["music","song"],
     version: "3.2",
     prefix: false,
     author: "‎MR᭄﹅ MAHABUB﹅ メꪜ",

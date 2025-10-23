@@ -106,10 +106,10 @@ module.exports = {
 "https://i.imgur.com/1oaM7ai.jpg",
 "https://i.imgur.com/Urx9Ijl.jpg",
 "https://i.imgur.com/QYGOZuK.jpg",
-	]
+  ]
 let img = link[Math.floor(Math.random()*link.length)]
 message.send({
-	body: '「 Sugar Mumma Ahh💦🥵 」',attachment: await global.utils.getStreamFromURL(img)
+  body: '「 Sugar Mumma Ahh💦🥵 」',attachment: await global.utils.getStreamFromURL(img)
 })
 }
-		 }
+     }

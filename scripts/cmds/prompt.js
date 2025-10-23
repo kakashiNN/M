@@ -1,45 +1,46 @@
 const axios = require("axios");
 
-const mahmud = async () => {
-  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/exe/main/baseApiUrl.json");
-  return base.data.mahmud;
-};
-
 module.exports = {
   config: {
     name: "prompt",
-    aliases: ["p"],
-    version: "1.7",
-    author: "MahMUD",
+    version: "1.0",
+    author: "@RI F AT",
+    countDown: 5,
+    role: 0,
+    shortDescription: {
+      en: "Generate AI image prompt from image"
+    },
+    longDescription: {
+      en: "Generate a detailed AI prompt from an image"
+    },
     category: "ai",
     guide: {
-      en: "{pn} reply with an image",
-    },
+      en: "{pn}\nReply to an image with this command."
+    }
   },
 
-  onStart: async function ({ api, args, event }) {
-    const apiUrl = `${await mahmud()}/api/prompt`;
-    let prompt = args.join(" ") || "Describe this image";
-
-    if (event.type === "message_reply" && event.messageReply.attachments[0]?.type === "photo") {
-      try {
-        const response = await axios.post(apiUrl, {
-          imageUrl: event.messageReply.attachments[0].url,
-          prompt
-        }, {
-          headers: { "Content-Type": "application/json", "author": module.exports.config.author }
-        });
-
-        const reply = response.data.error || response.data.response || "No response";
-        api.sendMessage(reply, event.threadID, event.messageID);
-        return api.setMessageReaction("🪽", event.messageID, () => {}, true);
-
-      } catch (error) {
-        api.sendMessage("moye moye🥹", event.threadID, event.messageID);
-        return api.setMessageReaction("❌", event.messageID, () => {}, true);
-      }
+  onStart: async function ({ message, event }) {
+    if (
+      !event.messageReply ||
+      !event.messageReply.attachments?.[0]?.type?.startsWith("photo")
+    ) {
+      return message.reply("Please reply to an image to generate a prompt.");
     }
 
-    api.sendMessage("Please reply with an image.", event.threadID, event.messageID);
+    const imgURL = event.messageReply.attachments[0].url;
+    const apiUrl = `https://rifatapi-sooty.vercel.app/api/prompt?img=${encodeURIComponent(imgURL)}`;
+
+    try {
+      const res = await axios.get(apiUrl);
+   
+      if (res.data?.data?.prompt) {
+        return message.reply(res.data.data.prompt); 
+      } else {
+        return message.reply("Failed to get a valid prompt from API.");
+      }
+    } catch (err) {
+      console.error("Prompt fetch error:", err.message);
+      return message.reply("Failed to generate prompt. Please try again later.");
+    }
   }
 };

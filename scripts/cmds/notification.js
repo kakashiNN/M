@@ -4,22 +4,17 @@ module.exports = {
 	config: {
 		name: "notification",
 		aliases: ["notify", "noti"],
-		version: "1.9",
+		version: "1.7",
 		author: "NTKhang",
-		modified: "ＮＩＲＯＢ ᶻ 𝗓 𐰁",
 		countDown: 5,
 		role: 2,
-		shortDescription: {
+		description: {
 			vi: "Gửi thông báo từ admin đến all box",
 			en: "Send notification from admin to all box"
 		},
-		longDescription: {
-			vi: "Gửi thông báo từ admin đến all box",
-			en: "Send notification from admin to all box"
-		},
-		category: "✦ Oᴡɴᴇʀ ✦",
+		category: "owner",
 		guide: {
-			en: "{pn} <message>"
+			en: "{pn} <tin nhắn>"
 		},
 		envConfig: {
 			delayPerGroup: 250
@@ -27,19 +22,19 @@ module.exports = {
 	},
 
 	langs: {
-		en: {
-			missingMessage: "⚠️ Please enter the message you want to send to all groups",
-			notification: "📝 NOTE BY ADMIN :- 𝐍𝐈𝐑𝐎𝐁 🌸\n(Nick: 𝐊𝐚𝐤𝐚𝐬𝐡𝐢)\n────────────────",
-			sendingNotification: "🚀 Sending notification to %1 chat groups...",
-			sentNotification: "✅ Sent notification to %1 groups successfully!",
-			errorSendingNotification: "⚠️ Error while sending to %1 groups:\n%2"
-		},
 		vi: {
-			missingMessage: "⚠️ Vui lòng nhập tin nhắn bạn muốn gửi đến tất cả các nhóm",
-			notification: "📝 NOTE BY ADMIN :- 𝐍𝐈𝐑𝐎𝐁 🌸\n(Nick: 𝐊𝐚𝐤𝐚𝐬𝐡𝐢)\n────────────────",
-			sendingNotification: "🚀 Đang gửi thông báo đến %1 nhóm chat...",
-			sentNotification: "✅ Đã gửi thông báo đến %1 nhóm thành công!",
-			errorSendingNotification: "⚠️ Có lỗi xảy ra khi gửi đến %1 nhóm:\n%2"
+			missingMessage: "Vui lòng nhập tin nhắn bạn muốn gửi đến tất cả các nhóm",
+			notification: "Thông báo từ admin bot đến tất cả nhóm chat (không phản hồi tin nhắn này)",
+			sendingNotification: "Bắt đầu gửi thông báo từ admin bot đến %1 nhóm chat",
+			sentNotification: "✅ Đã gửi thông báo đến %1 nhóm thành công",
+			errorSendingNotification: "Có lỗi xảy ra khi gửi đến %1 nhóm:\n%2"
+		},
+		en: {
+			missingMessage: "Please enter the message you want to send to all groups",
+			notification: "Notification from admin bot to all chat groups (do not reply to this message)",
+			sendingNotification: "Start sending notification from admin bot to %1 chat groups",
+			sentNotification: "✅ Sent notification to %1 groups successfully",
+			errorSendingNotification: "An error occurred while sending to %1 groups:\n%2"
 		}
 	},
 
@@ -47,9 +42,8 @@ module.exports = {
 		const { delayPerGroup } = envCommands[commandName];
 		if (!args[0])
 			return message.reply(getLang("missingMessage"));
-
 		const formSend = {
-			body: `${getLang("notification")}\n\n✨『 ${args.join(" ")} 』✨\n\n───❀`,
+			body: `${getLang("notification")}\n────────────────\n${args.join(" ")}`,
 			attachment: await getStreamsFromAttachment(
 				[
 					...event.attachments,
@@ -58,10 +52,7 @@ module.exports = {
 			)
 		};
 
-		const allThreadID = (await threadsData.getAll()).filter(
-			t => t.isGroup && t.members.find(m => m.userID == api.getCurrentUserID())?.inGroup
-		);
-
+		const allThreadID = (await threadsData.getAll()).filter(t => t.isGroup && t.members.find(m => m.userID == api.getCurrentUserID())?.inGroup);
 		message.reply(getLang("sendingNotification", allThreadID.length));
 
 		let sendSucces = 0;
@@ -76,7 +67,8 @@ module.exports = {
 					pending: api.sendMessage(formSend, tid)
 				});
 				await new Promise(resolve => setTimeout(resolve, delayPerGroup));
-			} catch (e) {
+			}
+			catch (e) {
 				sendError.push(tid);
 			}
 		}
@@ -85,7 +77,8 @@ module.exports = {
 			try {
 				await sended.pending;
 				sendSucces++;
-			} catch (e) {
+			}
+			catch (e) {
 				const { errorDescription } = e;
 				if (!sendError.some(item => item.errorDescription == errorDescription))
 					sendError.push({
@@ -101,14 +94,7 @@ module.exports = {
 		if (sendSucces > 0)
 			msg += getLang("sentNotification", sendSucces) + "\n";
 		if (sendError.length > 0)
-			msg += getLang(
-				"errorSendingNotification",
-				sendError.reduce((a, b) => a + b.threadIDs.length, 0),
-				sendError.reduce(
-					(a, b) => a + `\n - ${b.errorDescription}\n  + ${b.threadIDs.join("\n  + ")}`,
-					""
-				)
-			);
+			msg += getLang("errorSendingNotification", sendError.reduce((a, b) => a + b.threadIDs.length, 0), sendError.reduce((a, b) => a + `\n - ${b.errorDescription}\n  + ${b.threadIDs.join("\n  + ")}`, ""));
 		message.reply(msg);
 	}
 };

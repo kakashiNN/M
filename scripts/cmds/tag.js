@@ -1,49 +1,43 @@
-module.exports = {
-  config: {
-    name: "tag",
-    version: "1.1",
-    author: "Arijit",
-    countDown: 3,
-    role: 0,
-    shortDescription: "Tag mentioned or replied user",
-    longDescription: "Tag a user by mention or by replying to their message with an optional message.",
-    category: "utility",
-    guide: {
-      en: "{pn} [@mention or reply] [optional message]"
-    }
-  },
-
-  onStart: async function ({ api, event, args }) {
-    let targetID;
-    let tagName;
-
-    // Replied user
-    if (event.type === "message_reply") {
-      targetID = event.messageReply.senderID;
-      tagName = event.messageReply.senderID;
-    }
-
-    // Mentioned user
-    else if (Object.keys(event.mentions).length > 0) {
-      targetID = Object.keys(event.mentions)[0];
-      tagName = event.mentions[targetID];
-    }
-
-    // No target
-    else {
-      return api.sendMessage("❌ | Please mention a user or reply to someone's message.", event.threadID);
-    }
-
-    // Message body
-    const customMsg = args.join(" ") || "👋 Hey there!";
-    const msg = {
-      body: customMsg,
-      mentions: [{
-        tag: typeof tagName === "string" ? tagName : "User",
-        id: targetID
-      }]
+const config = {
+        name: "tag",
+        version: "1.6.9",
+        author: "Dipto",
+        credits: "Dipto",
+        countDown: 0,
+        role: 0,
+        hasPermission: 0,
+        description: "Tag user",
+        category: "tag",
+        commandCategory: "tag",
+        guide: "{pn} [reply/mention]",
+        usages: "reply or mention"
     };
 
-    return api.sendMessage(msg, event.threadID);
-  }
+const onStart = async ({ api, args, event }) => {
+       try {
+       const ID = event.messageReply?.senderID || args[0] || event.senderID;
+       const mentionedUser = await api.getUserInfo(ID);
+       if (mentionedUser && mentionedUser[ID]) {
+       const userName = mentionedUser[ID].name;
+       const text = args.join(" ");
+       await api.sendMessage({
+        body: `${userName} ${text}`,
+        mentions: [{
+            tag: userName,
+            id: ID 
+         }]
+       }, event.threadID, event.messageID);
+     } else {
+       api.sendMessage("Reply to a message to tag...", event.threadID, event.messageID);
+       }
+    } catch (error) {
+        console.log(error);
+        api.sendMessage(`Error: ${error.message}`, event.threadID, event.messageID);
+   }
+  };
+
+module.exports = {
+  config, 
+  onStart,
+  run: onStart
 };
