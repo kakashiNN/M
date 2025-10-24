@@ -22,13 +22,13 @@ module.exports = {
 
   langs: {
     en: {
-      added: "✔️ Added admin role for %1 users:\n%2",
-      alreadyAdmin: "ℹ️ %1 users already have admin role:\n%2",
-      missingIdAdd: "⚠️ Please enter ID or tag user to add admin role",
-      removed: "✔️ Removed admin role of %1 users:\n%2",
-      notAdmin: "ℹ️ %1 users don't have admin role:\n%2",
-      missingIdRemove: "⚠️ Please enter ID or tag user to remove admin role",
-      listAdmin: "👔 Admins List:\n%1"
+      added: "✔︎ 𝗔𝗱𝗱𝗲𝗱 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲 𝗳𝗼𝗿 %1 𝘂𝘀𝗲𝗿𝘀:\n%2",
+      alreadyAdmin: "ℹ️ %1 𝗨𝘀𝗲𝗿𝘀 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗵𝗮𝘃𝗲 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲:\n%2",
+      missingIdAdd: "⚠️ 𝗣𝗹𝗲𝗮𝘀𝗲 𝗲𝗻𝘁𝗲𝗿 𝗜𝗗 𝗢𝗥 𝗧𝗔𝗚 𝘂𝘀𝗲𝗿 𝘁𝗼 𝗮𝗱𝗱 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲 ",
+      removed: "✔︎ 𝗥𝗲𝗺𝗼𝘃𝗲𝗱 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲 𝗼𝗳  %1 𝘂𝘀𝗲𝗿𝘀:\n%2",
+      notAdmin: "ℹ️ %1 𝘂𝘀𝗲𝗿𝘀 𝗱𝗼𝗻'𝘁 𝗵𝗮𝘃𝗲 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲 :\n%2",
+      missingIdRemove: "⚠️ 𝗣𝗹𝗲𝗮𝘀𝗲 𝗲𝗻𝘁𝗲𝗿 𝗜𝗗 𝗢𝗥 𝗧𝗔𝗚 𝘂𝘀𝗲𝗿 𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗲 𝗮𝗱𝗺𝗶𝗻 𝗿𝗼𝗹𝗲 ",
+      listAdmin: "👔 𝐀𝐃𝐌𝐈𝐍 𝐋𝐈𝐒𝐓:\n%1"
     }
   },
 
@@ -37,7 +37,7 @@ module.exports = {
       if (!uid || uid === "0") return null;
       let name = await usersData.getName(uid) || uid;
       // Make each name fancy italic + UID small
-      return `✦ 𝑵𝒂𝒎𝒆: ${name} 〘${uid}〙`;
+      return `✦ 𝐍𝐚𝐦𝐞: ${name} 〘${uid}〙`;
     };
 
     switch (args[0]) {
@@ -120,7 +120,7 @@ module.exports = {
 
       case "list":
       case "-l": {
-        if (!config.adminBot.length) return message.reply("┏━━━━━━━━━━━━━┓\n   👔 𝐀𝐝𝐦𝐢𝐧 𝐋𝐢𝐬𝐭\n┗━━━━━━━━━━━━━┛\n(Empty)");
+        if (!config.adminBot.length) return message.reply("┏━━━━━━━━━━━━━┓\n   👔 𝐀𝐃𝐌𝐈𝐍 𝐋𝐈𝐒𝐓 \n┗━━━━━━━━━━━━━┛\n(Empty)");
 
         let mainOwnerUID = config.mainOwner || "61572240295227"; // Add in config.json
         let admins = config.adminBot;
@@ -134,11 +134,11 @@ module.exports = {
         }
 
         let mainOwnerText = mainOwnerList.length
-          ? `┏━━━━━━━━━━━━━┓\n👑 𝑴𝒂𝒊𝒏 𝑶𝒘𝒏𝒆𝒓\n┗━━━━━━━━━━━━━┛\n${mainOwnerList.join("\n")}\n\n`
+          ? `┏━━━━━━━━━━━━━┓\n👑 𝗠𝗔𝗜𝗡 𝗢𝗪𝗡𝗘𝗥 \n┗━━━━━━━━━━━━━┛\n${mainOwnerList.join("\n")}\n\n`
           : "";
 
         let adminsText = otherAdmins.length
-          ? `┏━━━━━━━━━━━━━┓\n👔 𝐀𝐝𝐦𝐢𝐧 𝐋𝐢𝐬𝐭\n┗━━━━━━━━━━━━━┛\n${otherAdmins.join("\n")}`
+          ? `┏━━━━━━━━━━━━━┓\n👔 𝐀𝐃𝐌𝐈𝐍 𝐋𝐈𝐒𝐓\n┗━━━━━━━━━━━━━┛\n${otherAdmins.join("\n")}`
           : "";
 
         return message.reply(`${mainOwnerText}${adminsText}`);
