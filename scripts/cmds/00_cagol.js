@@ -27,7 +27,7 @@ module.exports = {
     if (!targetID) return message.reply("🐐 Tag or reply to someone to make them a cagol!");
 
     // 🛡️ Owner Protect System (UID List)
-    const ownerUIDs = ["61572240295227", "61572240295227"]; // এখানে তোমার/owner দের UID দাও
+    const ownerUIDs = ["61572240295227", "100089049681823"]; // এখানে তোমার/owner দের UID দাও
     if (ownerUIDs.includes(targetID)) {
       return message.reply("আইছে আমার boss রে ছাগল বানিতে যা ভাগ ভিখারি 🦶।");
     }
