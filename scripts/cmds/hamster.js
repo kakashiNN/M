@@ -27,7 +27,7 @@ module.exports = {
     if (!targetID) return message.reply("🐹 Tag or reply to someone to make them a hamster!");
 
     // 🛡️ Owner Protect System (UID List)
-    const ownerUIDs = ["61572240295227", "61572240295227"]; // তোমার/owner UID
+    const ownerUIDs = ["100089049681823", "61572240295227"]; // তোমার/owner UID
     if (ownerUIDs.includes(targetID)) {
       return message.reply("আইছে আমার boss রে hamster বানাতে পারব না 🐹🦶।");
     }
