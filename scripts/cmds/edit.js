@@ -54,7 +54,7 @@ module.exports = {
           `📸 𝙀𝘿𝙄𝙏•𝙄𝙈𝙂\n━━━━━━━━━━━━━━━━━━━━━━\n` +
           `⛔️ 𝙔𝙤𝙪 𝙢𝙪𝙨𝙩 𝙜𝙞𝙫𝙚 𝙗𝙤𝙩𝙝 𝙖 𝙥𝙧𝙤𝙢𝙥𝙩 𝙖𝙣𝙙 𝙖𝙣 𝙞𝙢𝙖𝙜𝙚!\n\n` +
           `✨ Example:\n▶️ edit add cute girlfriend |\n\n` +
-          `🖼️ Or Reply to an image:\n▶️ edit add cute girlfriend`,
+          `🖼️ Or Reply to an image:\n▶️ e add cute girlfriend`,
           event.threadID,
           event.messageID
         );
