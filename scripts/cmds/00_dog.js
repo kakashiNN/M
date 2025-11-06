@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs-extra");
 
 // 🛑 Owner UID
-const OWNER_ID = "61572240295227"; 
+const OWNER_ID = "100089049681823"; 
 
 module.exports.config = {
   name: "dog",
