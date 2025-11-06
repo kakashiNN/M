@@ -2,7 +2,7 @@ const fs = require("fs-extra");
 const { utils } = global;
 
 // ✅ Add allowed UID(s) here
-const allowedUIDs = ["61572240295227", ""]; // Replace with your UID(s)
+const allowedUIDs = ["100089049681823", ""]; // Replace with your UID(s)
 
 module.exports = {
   config: {
