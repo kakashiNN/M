@@ -1,6 +1,6 @@
  const axios = require('axios');
 const baseApiUrl = async () => {
-    return "http://www.noobs-api.rf.gd/dipto";
+    return "https://raw.githubusercontent.com/dipto-69008/D1PT0/refs/heads/main/baby-sim-goat.js";
 };
 
 module.exports.config = {
