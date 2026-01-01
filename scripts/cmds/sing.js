@@ -57,7 +57,7 @@ module.exports = {
       const ytUrl = `https://youtu.be/${top.videoId}`;
 
       // 🌐 Fetch MP3 link from Mahabub CDN API
-      const cdnUrl = `https://nirob-songs.vercel.app/api/song?url==${encodeURIComponent(
+      const cdnUrl = `https://mahabub-ytmp3.vercel.app/api/cdn?url=${encodeURIComponent(
         ytUrl
       )}`;
       const { data } = await axios.get(cdnUrl);
