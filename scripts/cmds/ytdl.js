@@ -1,10 +1,12 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "ytdl",
     aliases: ["yt"],
-    version: "2.0",
+    version: "3.0",
     author: "NIROB",
     role: 0,
     category: "media",
@@ -12,14 +14,16 @@ module.exports = {
   },
 
   onStart: async function ({ message, args }) {
+    const url = args.join(" ");
+
+    if (!url)
+      return message.reply("❌ YouTube link missing");
+
+    if (!/(youtube\.com|youtu\.be)/i.test(url))
+      return message.reply("❌ Only YouTube links allowed");
+
     try {
-      const url = args.join(" ");
-
-      if (!url)
-        return message.reply("❌ YouTube link missing");
-
-      if (!/(youtube\.com|youtu\.be)/i.test(url))
-        return message.reply("❌ Only YouTube links allowed");
+      await message.reply("⏳ Downloading video, please wait...");
 
       const res = await axios.get(
         "https://nirob-ytdl-apis.vercel.app/api/ytdl",
@@ -30,26 +34,51 @@ module.exports = {
         }
       );
 
-      if (!res.data || res.data.status !== "success")
+      if (res.data.status !== "success")
         return message.reply("❌ API failed");
 
       const data = res.data.data;
-
-      let msg = `🎬 ${data.title}\n`;
-      msg += `⏱ ${data.lengthSeconds}s\n\n`;
-      msg += `📥 Download Links:\n`;
-
       const videos = data.format_options.video.mp4;
 
-      videos.forEach(v => {
-        msg += `• ${v.quality}${v.hasAudio ? " 🔊" : ""}\n${v.url}\n\n`;
+      // 🎯 pick best video with audio
+      let selected =
+        videos.find(v => v.hasAudio && v.quality.includes("720")) ||
+        videos.find(v => v.hasAudio);
+
+      if (!selected)
+        return message.reply("❌ No video with audio found");
+
+      const filePath = path.join(
+        __dirname,
+        `/cache_${Date.now()}.mp4`
+      );
+
+      // ⬇️ download video
+      const videoStream = await axios({
+        url: selected.url,
+        method: "GET",
+        responseType: "stream"
       });
 
-      return message.reply(msg);
+      const writer = fs.createWriteStream(filePath);
+      videoStream.data.pipe(writer);
+
+      writer.on("finish", async () => {
+        await message.reply({
+          body: `🎬 ${data.title}\n⏱ ${data.lengthSeconds}s`,
+          attachment: fs.createReadStream(filePath)
+        });
+
+        fs.unlinkSync(filePath);
+      });
+
+      writer.on("error", () => {
+        message.reply("❌ Video download failed");
+      });
 
     } catch (err) {
-      console.error("YTDL ERROR:", err.message);
-      return message.reply("❌ Error: " + err.message);
+      console.error(err);
+      return message.reply("❌ Error while sending video");
     }
   }
 };
