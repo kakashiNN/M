@@ -6,21 +6,24 @@ module.exports = {
   config: {
     name: "owner",
     author: "Tokodori",
+    version: "2.5.0",
     role: 0,
     shortDescription: "Show bot owner info",
-    longDescription: "Display short & styled info about the bot owner",
+    longDescription: "Display styled info about the bot owner using symbols",
     category: "ADMIN",
     guide: "{pn}"
   },
 
   onStart: async function ({ api, event }) {
     try {
-      const ownerInfo = {
-        name: ' ＮＩＲＯＢ ᶻ 𝗓 𐰁',
-        age: ' 19 ',
-        nick: 'kakashi',
-        gender: '🚹 Male',
-        tag: '⌛ Time Traveler'
+      const owner = {
+        name: 'NIROB',
+        age: '19',
+        nick: 'KAKASHI',
+        identity: 'TIME TRAVELER',
+        hobby: 'CODING',
+        location: 'DHAKA',
+        status: 'ACTIVE'
       };
 
       const videoURL = 'https://files.catbox.moe/026g5j.mp4';
@@ -32,27 +35,32 @@ module.exports = {
       fs.writeFileSync(videoPath, Buffer.from(videoData.data, 'binary'));
 
       const msg = `
-╭─────────────⭑
-│ 🧸 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢
-├─────────────
-│ 🪪 𝗡𝗮𝗺𝗲   : ${ownerInfo.name}
-│ 🎂 𝗔𝗴𝗲    : ${ownerInfo.age}
-│ 🧿 𝗡𝗶𝗰𝗸   : ${ownerInfo.nick}
-│ ⚧️ 𝗚𝗲𝗻𝗱𝗲𝗿 : ${ownerInfo.gender}
-│ 🌀 𝗧𝗮𝗴    : ${ownerInfo.tag}
-╰─────────────⭑
+───〈 ＯＷＮＥＲ  ＩＮＦＯ 〉───
 
-🌸 𝗠𝘆 𝗕𝗼𝘁, 𝗬𝗼𝘂𝗿 𝗖𝗼𝗺𝗳𝗼𝗿𝘁 💖
+    ⌬  Ｎａｍｅ      ⁚  ${owner.name}
+    ⌬  Ａｇｅ       ⁚  ${owner.age}
+    ⌬  Ｎｉｃｋ     ⁚  ${owner.nick}
+    ⌬  Ｉｄｅｎｔｉｔｙ ⁚  ${owner.identity}
+    ⌬  Ｈｏｂｂｙ     ⁚  ${owner.hobby}
+    ⌬  Ｌｏｃａｔｉｏｎ ⁚  ${owner.location}
+    ⌬  Ｓｔａｔｕｓ   ⁚  ${owner.status}
+
+───〈 ＳＹＳＴＥＭ  ＯＦＦ 〉───
+
+「 Ｍｙ Ｂｏｔ • Ｙｏｕｒ Ｃｏｍｆｏｒｔ 」
 `;
 
       await api.sendMessage({
         body: msg,
         attachment: fs.createReadStream(videoPath)
-      }, event.threadID, event.messageID);
+      }, event.threadID, (err) => {
+          if (err) console.error(err);
+          if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
+      }, event.messageID);
 
     } catch (e) {
       console.error("OWNER CMD ERR:", e);
-      return api.sendMessage("⚠️ Something went wrong while fetching owner info.", event.threadID);
+      return api.sendMessage("⚠️ System Error: Unable to fetch owner details.", event.threadID);
     }
   },
 };
